@@ -1,5 +1,10 @@
 package types
 
+import (
+	"encoding/json"
+	"log"
+)
+
 type Hourly struct {
 	Latitude             float64 `json:"latitude"`
 	Longitude            float64 `json:"longitude"`
@@ -100,6 +105,14 @@ type Hourly struct {
 	} `json:"hourly"`
 }
 
+func (h *Hourly) String() string {
+	bData, err := json.MarshalIndent(h, "", "  ")
+	if err != nil {
+		log.Println("err JSONMarshal ", err)
+	}
+	return string(bData)
+}
+
 type Daily struct {
 	Latitude             float64 `json:"latitude"`
 	Longitude            float64 `json:"longitude"`
@@ -154,4 +167,12 @@ type Daily struct {
 		ShortwaveRadiationSum       []float64 `json:"shortwave_radiation_sum"`
 		Et0FaoEvapotranspiration    []float64 `json:"et0_fao_evapotranspiration"`
 	} `json:"daily"`
+}
+
+func (h *Daily) String() string {
+	bData, err := json.MarshalIndent(h, "", "  ")
+	if err != nil {
+		log.Println("err JSONMarshal ", err)
+	}
+	return string(bData)
 }
