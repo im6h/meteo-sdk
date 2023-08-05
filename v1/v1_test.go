@@ -1,6 +1,7 @@
 package meteo
 
 import (
+	"fmt"
 	"testing"
 )
 
@@ -8,6 +9,7 @@ var c = NewClient(nil)
 
 func TestGetHourly(t *testing.T) {
 	temp, err := c.GetHourlyData("21.02", "105.84")
+
 	if err != nil {
 		t.FailNow()
 	}
@@ -18,6 +20,8 @@ func TestGetHourly(t *testing.T) {
 		len(temp.Hourly.Time) < 1 {
 		t.FailNow()
 	}
+
+	fmt.Println(temp.String())
 }
 
 func TestGetDaily(t *testing.T) {
