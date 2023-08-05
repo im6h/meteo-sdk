@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 
 	"github.com/im6h/meteo-sdk/types"
@@ -29,7 +30,6 @@ func NewClient(
 }
 
 func doReq(req *http.Request, client *http.Client) ([]byte, error) {
-	// req.Header.Add("Accept", `application/json`)
 	client.Timeout = time.Second * 10
 	resp, err := client.Do(req)
 	if err != nil {
@@ -63,15 +63,21 @@ func (c *Client) MakeReq(url string) ([]byte, error) {
 	return resp, nil
 }
 
-// API LISting
+// API Listing
 
-// GetTemperature2m
-func (c *Client) GetTemperature2m(lat, long string) (*types.Temperature, error) {
+// GetHourlyData
+func (c *Client) GetHourlyData(lat, long string, props ...string) (*types.Hourly, error) {
 	params := url.Values{}
 
-	params.Add("hourly", "temperature_2m")
 	params.Add("latitude", lat)
 	params.Add("longitude", long)
+
+	if len(props) > 0 {
+		params.Add("hourly", strings.Join(props, ","))
+		params.Add("models", "best_match")
+	} else {
+		params.Add("hourly", "temperature_2m")
+	}
 
 	url := fmt.Sprintf("%s?%s", baseURL, params.Encode())
 	resp, err := c.MakeReq(url)
@@ -79,7 +85,38 @@ func (c *Client) GetTemperature2m(lat, long string) (*types.Temperature, error) 
 		return nil, err
 	}
 
-	var data *types.Temperature
+	var data *types.Hourly
+	err = json.Unmarshal(resp, &data)
+	if err != nil {
+		return nil, err
+	}
+
+	return data, nil
+}
+
+// GetDailyData
+func (c *Client) GetDailyData(lat, long, timezone string, props ...string) (*types.Daily, error) {
+	params := url.Values{}
+
+	params.Add("latitude", lat)
+	params.Add("longitude", long)
+	params.Add("timezone", timezone)
+
+	if len(props) > 0 {
+		params.Add("dailly", strings.Join(props, ","))
+		params.Add("models", "best_match")
+	} else {
+		params.Add("daily", "weathercode")
+		params.Add("timezone", "GMT")
+	}
+
+	url := fmt.Sprintf("%s?%s", baseURL, params.Encode())
+	resp, err := c.MakeReq(url)
+	if err != nil {
+		return nil, err
+	}
+
+	var data *types.Daily
 	err = json.Unmarshal(resp, &data)
 	if err != nil {
 		return nil, err
